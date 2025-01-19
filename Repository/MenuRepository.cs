@@ -20,29 +20,35 @@ namespace MovieApp.Repository
             return await _context.Menus.ToListAsync();
         }
 
-        public async Task AddMenuAsync(string foodName, int price, bool isAvailable)
+        public async Task<Menu> GetMenuById(int id)
+        {
+            var menu = await _context.Menus.FindAsync(id);
+            return menu;
+        }
+
+        public async Task AddMenuAsync(MenuDto model)
         {
 
             var NewMenu = new Menu
             {
-                FoodName = foodName,
-                Price = price,
-                IsAvaiable = isAvailable
+                FoodName = model.FoodName,
+                Price = model.Price,
+                IsAvaiable = model.IsAvaiable
             };
 
             await _context.Menus.AddAsync(NewMenu);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateMenuAsync(MenuDto menuDto, int MenuId)
+        public async Task UpdateMenuAsync(Menu model)
         {
-            var MenuFound = _context.Menus.Where(x => x.Id == MenuId).FirstOrDefault();
+            var MenuFound = _context.Menus.Where(x => x.Id == model.Id).FirstOrDefault();
 
             if(MenuFound != null)
             {
-                MenuFound.FoodName = menuDto.FoodName;
-                MenuFound.Price = menuDto.Price;
-                MenuFound.IsAvaiable = menuDto.IsAvaiable;
+                MenuFound.FoodName = model.FoodName;
+                MenuFound.Price = model.Price;
+                MenuFound.IsAvaiable = model.IsAvaiable;
                 _context.Update(MenuFound);
                 await _context.SaveChangesAsync();
             }

@@ -5,10 +5,11 @@ namespace MovieApp.Repository.IRepository
 {
     public interface ICustomerRepository
     {
-        Task AddCustomerAsync(string CustomerName, int PhoneNumber);
+        Task AddCustomerAsync(CustomersDto model);
         Task<IEnumerable<Customers>> GetAllCustomersAsync();
-        Task UpdateCustomer(CustomersDto dto, int customerId);
+        Task<Customers> GetCustomerById(int id);
+        Task UpdateCustomer(Customers model);
         Task DeleteCustomer(int customerId);
-        bool CheckIfCustomerExists(string CustomerName);
+        bool CheckIfCustomerExists(string CustomerName, int phonenumber);
     }
 }

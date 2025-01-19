@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MovieApp.Dtos;
+using MovieApp.Models;
 using MovieApp.Repository.IRepository;
 
 namespace MovieApp.Controllers
@@ -23,34 +25,44 @@ namespace MovieApp.Controllers
             return Ok(tableList);
         }
 
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult<CustomersDto>> GetCustomerById(int id)
+        {
+            var customer = await _customerRepo.GetCustomerById(id);
+            return Ok(customer);
+        }
+
         [HttpPost]
         [Route("AddCustomer")]
-        public async Task<ActionResult<IEnumerable<CustomersDto>>> AddCustomer(string CustomerName, int PhoneNumber)
+        public async Task<ActionResult<IEnumerable<CustomersDto>>> AddCustomer(CustomersDto model)
         {
-            if(_customerRepo.CheckIfCustomerExists(CustomerName))
+            if(_customerRepo.CheckIfCustomerExists(model.CustomerName, model.Phone))
             {
                 return BadRequest("Customer already exists");
             }
             else
             {
-                await _customerRepo.AddCustomerAsync(CustomerName, PhoneNumber);
+                await _customerRepo.AddCustomerAsync(model);
                 return Ok();
             }
         }
 
         [HttpPatch]
         [Route("UpdateCustomer")]
-        public async Task<ActionResult<IEnumerable<CustomersDto>>> UpdateCustomer(CustomersDto dto, int customerId)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult<IEnumerable<CustomersDto>>> UpdateCustomer(Customers model)
         {
-            await _customerRepo.UpdateCustomer(dto, customerId);
+            await _customerRepo.UpdateCustomer(model);
             return Ok();
         }
 
         [HttpDelete]
-        [Route("DeleteCustomer")]
-        public async Task<ActionResult> DeleteCustomer(int customerId)
+        [Route("{id}")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult> DeleteCustomer(int id)
         {
-            await _customerRepo.DeleteCustomer(customerId);
+            await _customerRepo.DeleteCustomer(id);
             return Ok();
         }
     }

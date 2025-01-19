@@ -2,6 +2,7 @@
 using MovieApp.Repository.IRepository;
 using MovieApp.Dtos;
 using MovieApp.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MovieApp.Controllers
 {
@@ -25,12 +26,21 @@ namespace MovieApp.Controllers
             return Ok(MenuList);
         }
 
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult<MenuDto>> GetMenuById(int id)
+        {
+            var menu = await _menuRepo.GetMenuById(id);
+            return Ok(menu);
+        }
+
         [HttpPost]
         [Route("AddMenu")]
-        public async Task<ActionResult<IEnumerable<MenuDto>>> AddMenu(string foodName, int price, bool isAvailable)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult<IEnumerable<MenuDto>>> AddMenu(MenuDto model)
         {
 
-            await _menuRepo.AddMenuAsync(foodName, price, isAvailable);
+            await _menuRepo.AddMenuAsync(model);
             return Ok();
 
 
@@ -38,18 +48,20 @@ namespace MovieApp.Controllers
 
         [HttpPatch]
         [Route("UpdateMenu")]
-        public async Task<ActionResult<IEnumerable<MenuDto>>> UpdateMenu(MenuDto menuDto, int menuId)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult<IEnumerable<MenuDto>>> UpdateMenu(Menu model)
         {
-            await _menuRepo.UpdateMenuAsync(menuDto, menuId);
+            await _menuRepo.UpdateMenuAsync(model);
             return Ok();
 
         }
 
         [HttpDelete]
-        [Route("DeleteMenu")]
-        public async Task<ActionResult> DeleteMenu(int menuId)
+        [Route("{id}")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult> DeleteMenu(int id)
         {
-            await _menuRepo.DeleteMenuAsync(menuId);
+            await _menuRepo.DeleteMenuAsync(id);
             return Ok();
         }
     }

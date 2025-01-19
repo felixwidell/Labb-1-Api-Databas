@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieApp.Repository.IRepository;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MovieApp.Controllers
 {
@@ -22,21 +23,29 @@ namespace MovieApp.Controllers
             _bookingRepo = repository;
         }
 
-        [HttpGet]
-        [Route("GetAllBookings")]
+        [HttpGet("GetAllBookings")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<ActionResult> GetAllBookings()
         {
             var BookingList = await _bookingRepo.GetAllBookingAsync();
             return Ok(BookingList);
         }
 
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult> GetBookingById(int id)
+        {
+            var Booking = await _bookingRepo.GetBookingById(id);
+            return Ok(Booking);
+        }
+
         [HttpPost]
         [Route("AddBooking")]
-        public async Task<ActionResult<IEnumerable<BookingsDto>>> AddBooking(int CustomerId, int TableId, DateTime Date, int peopleAmount)
+        public async Task<ActionResult<IEnumerable<BookingsDto>>> AddBooking(Bookings model)
         {
-            if(_bookingRepo.CheckIfAvailable(Date, TableId))
+            if(_bookingRepo.CheckIfAvailable(model.BookingDate, model.Tables.Id))
             {
-                await _bookingRepo.AddBookingAsync(CustomerId, TableId, Date, peopleAmount);
+                await _bookingRepo.AddBookingAsync(model.Customers.Id, model.Tables.Id, model.BookingDate, model.PeopleAmount);
                 return Ok();
             }
             else
@@ -48,11 +57,12 @@ namespace MovieApp.Controllers
 
         [HttpPatch]
         [Route("UpdateBooking")]
-        public async Task<ActionResult<IEnumerable<BookingsDto>>> UpdateBooking(BookingsDto bookingdto, int customerId)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<ActionResult<IEnumerable<BookingsDto>>> UpdateBooking(BookingsDto bookingdto)
         {
-            if (_bookingRepo.CheckIfAvailable(bookingdto.BookingDate, bookingdto.TableId))
+            if (_bookingRepo.CheckIfAvailableUpdateBooking(bookingdto.BookingDate, bookingdto.TableId))
             {
-                await _bookingRepo.UpdateBookingAsync(bookingdto, customerId);
+                await _bookingRepo.UpdateBookingAsync(bookingdto);
                 return Ok(bookingdto);
             }
             else
@@ -62,10 +72,11 @@ namespace MovieApp.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteBooking")]
-        public async Task<ActionResult> DeleteBooking(int bookingId)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Route("{id}")]
+        public async Task<ActionResult> DeleteBooking(int id)
         {
-            await _bookingRepo.DeleteBooking(bookingId);
+            await _bookingRepo.DeleteBooking(id);
             return Ok();
         }
     }

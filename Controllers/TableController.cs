@@ -3,6 +3,7 @@ using MovieApp.Models;
 using MovieApp.Services;
 using MovieApp.Dtos;
 using MovieApp.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MovieApp.Controllers
 {
@@ -26,34 +27,37 @@ namespace MovieApp.Controllers
         }
 
         [HttpGet]
-        [Route("tables/GetTableById")]
-        public async Task<ActionResult<IEnumerable<TableDto>>> GetTableById(int tableId)
+        [Route("{id}")]
+        public async Task<ActionResult<IEnumerable<TableDto>>> GetTableById(int id)
         {
-            var table = await _tableRepo.GetTableByIdAsync(tableId);
+            var table = await _tableRepo.GetTableByIdAsync(id);
             return Ok(table);
         }
 
         [HttpPost]
         [Route("AddTable")]
-        public async Task<IActionResult> AddTable(int seats)
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> AddTable(TableDto model)
         {
-             var newTable = await _tableRepo.AddTable(seats);
+             var newTable = await _tableRepo.AddTable(model.Seats);
             return Ok(newTable);
         }
 
         [HttpPatch]
-        [Route("UpdateTable")] 
-        public async Task<IActionResult> UpdateTable(int newSeats, int tableId)
+        [Route("UpdateTable")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> UpdateTable(Tables model)
         {
-            var updatedTable = await _tableRepo.UpdateTable(newSeats, tableId);
+            var updatedTable = await _tableRepo.UpdateTable(model.Seats, model.Id);
             return Ok(updatedTable);
         }
 
         [HttpDelete]
-        [Route("DeleteTable")]
-        public async Task<IActionResult> DeleteTable(int tableId)
+        [Route("{id}")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> DeleteTable(int id)
         {
-            await _tableRepo.DeleteTable(tableId);
+            await _tableRepo.DeleteTable(id);
             return Ok();
         }
     }

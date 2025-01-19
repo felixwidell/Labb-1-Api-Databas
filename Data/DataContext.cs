@@ -10,6 +10,7 @@ namespace MovieApp.Data
         public DbSet<Customers> Customers { get; set; }
         public DbSet<Menu> Menus{ get; set; }
         public DbSet<Tables> Tables { get; set; }
+        public DbSet<Admin> Admins { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
     }

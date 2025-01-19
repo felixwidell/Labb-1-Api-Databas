@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using MovieApp.Data;
 using MovieApp.Dtos;
 using MovieApp.Models;
@@ -20,13 +21,19 @@ namespace MovieApp.Repository
             return await _context.Customers.ToListAsync();
         }
 
-        public async Task AddCustomerAsync(string CustomerName, int PhoneNumber)
+        public async Task<Customers> GetCustomerById(int id)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            return customer;
+        }
+
+        public async Task AddCustomerAsync(CustomersDto model)
         {
 
                 var NewCustomer = new Customers
                 {
-                    CustomerName = CustomerName,
-                    Phone = PhoneNumber
+                    CustomerName = model.CustomerName,
+                    Phone = model.Phone
                 };
 
                 await _context.Customers.AddAsync(NewCustomer);
@@ -34,14 +41,14 @@ namespace MovieApp.Repository
 
         }
 
-        public async Task UpdateCustomer(CustomersDto dto , int customerId)
+        public async Task UpdateCustomer(Customers model)
         {
-            var customerFound = await _context.Customers.FindAsync(customerId);
+            var customerFound = await _context.Customers.FindAsync(model.Id);
 
             if (customerFound != null)
             {
-                customerFound.CustomerName = dto.CustomerName;
-                customerFound.Phone = dto.Phone;
+                customerFound.CustomerName = model.CustomerName;
+                customerFound.Phone = model.Phone;
 
                 _context.Customers.Update(customerFound);
                 await _context.SaveChangesAsync();
@@ -59,9 +66,9 @@ namespace MovieApp.Repository
             }
         }
 
-        public bool CheckIfCustomerExists(string CustomerName)
+        public bool CheckIfCustomerExists(string CustomerName, int phonenumber)
         {
-            var Customer = _context.Customers.Where(x => x.CustomerName == CustomerName).FirstOrDefault();
+            var Customer = _context.Customers.Where(x => x.CustomerName == CustomerName && x.Phone == phonenumber).FirstOrDefault();
 
             if(Customer != null)
             {

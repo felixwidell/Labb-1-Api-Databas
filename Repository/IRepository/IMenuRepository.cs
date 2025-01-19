@@ -6,8 +6,9 @@ namespace MovieApp.Repository.IRepository
     public interface IMenuRepository
     {
         Task<IEnumerable<Menu>> GetMenu();
-        Task AddMenuAsync(string foodName, int price, bool isAvailable);
-        Task UpdateMenuAsync(MenuDto menuDto, int MenuId);
+        Task<Menu> GetMenuById(int id);
+        Task AddMenuAsync(MenuDto model);
+        Task UpdateMenuAsync(Menu model);
         Task DeleteMenuAsync(int menuId);
     }
 }

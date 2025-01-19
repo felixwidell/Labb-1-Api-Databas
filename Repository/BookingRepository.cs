@@ -17,7 +17,18 @@ namespace MovieApp.Repository
 
         public async Task<IEnumerable<Bookings>> GetAllBookingAsync()
         {
-            return await _context.Bookings.ToListAsync();
+            return await _context.Bookings.Include(b => b.Customers)
+            .Include(b => b.Tables).ToListAsync();
+        }
+
+        public async Task<Bookings> GetBookingById(int id)
+        {
+
+            var booking = await _context.Bookings.Include(b => b.Customers)
+            .Include(b => b.Tables)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+            return booking;
         }
 
         public async Task AddBookingAsync(int CustomerId, int TableId, DateTime Date, int peopleAmount)
@@ -37,9 +48,9 @@ namespace MovieApp.Repository
                 await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateBookingAsync(BookingsDto bookingDto, int customerId)
+        public async Task UpdateBookingAsync(BookingsDto bookingDto)
         {
-            var bookingFound = _context.Bookings.Where(x => x.Customers.Id == customerId).FirstOrDefault();
+            var bookingFound = _context.Bookings.Where(x => x.Customers.Id == bookingDto.Customer).FirstOrDefault();
             var table = _context.Tables.Where(x => x.Id == bookingDto.TableId).FirstOrDefault();
 
             if (bookingFound != null && table != null)
@@ -76,9 +87,36 @@ namespace MovieApp.Repository
             {
                 TimeSpan difference = date - item.BookingDate;
 
+
                 if (Math.Abs(difference.TotalHours) < 1)
                 {
                     DateAvailable = false;
+                    break;
+                }
+            }
+
+            return DateAvailable;
+        }
+
+        public bool CheckIfAvailableUpdateBooking(DateTime date, int tableId)
+        {
+            bool DateAvailable = true;
+
+            var BookingsList = _context.Bookings.Where(x => x.Tables.Id == tableId).ToList();
+
+            foreach (var item in BookingsList)
+            {
+                TimeSpan difference = date - item.BookingDate;
+
+                if (date == item.BookingDate)
+                {
+                    DateAvailable = true;
+                    break;
+                }
+                else if (Math.Abs(difference.TotalHours) < 1)
+                {
+                    DateAvailable = false;
+                    break;
                 }
             }
 
